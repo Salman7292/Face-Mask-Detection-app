@@ -7,7 +7,6 @@ from PIL import Image
 from streamlit_option_menu import option_menu
 import matplotlib.image as mpimg
 import os
-import cv2
 from tensorflow.keras.models import load_model
 
 # Load the saved model
@@ -19,16 +18,15 @@ st.set_page_config(
     layout="wide"
 )
 
+
+
 def image_preprocessing(image):
-    # Convert the uploaded image to a format compatible with OpenCV
+    # Open and convert the uploaded image
     image = Image.open(image)
-    image = np.array(image)
-
-    input_image = cv2.resize(image, (128, 128))
-    input_image_scaled = input_image / 255.0
-    input_image_reshaped = np.reshape(input_image_scaled, [1, 128, 128, 3])
+    image = image.resize((128, 128))
+    input_image = np.array(image) / 255.0
+    input_image_reshaped = np.reshape(input_image, [1, 128, 128, 3])
     prediction = cnn_model.predict(input_image_reshaped)
-
 
     input_label = np.argmax(prediction)
 
@@ -37,31 +35,27 @@ def image_preprocessing(image):
     else:
         return ("This person does not have a mask on their face.")
 
-
-
 def image_preprocessing_from_url(image_url):
     # Fetch the image from the URL
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
 
-    # Convert the image to a format compatible with OpenCV
-    image = np.array(image)
-
-    # Resize the image to the required input size for the model
-    input_image = cv2.resize(image, (128, 128))
-    input_image_scaled = input_image / 255.0
-    input_image_reshaped = np.reshape(input_image_scaled, [1, 128, 128, 3])
+    # Convert the image to a format compatible with the model
+    image = image.resize((128, 128))
+    input_image = np.array(image) / 255.0
+    input_image_reshaped = np.reshape(input_image, [1, 128, 128, 3])
     
     # Predict using the CNN model
     prediction = cnn_model.predict(input_image_reshaped)
 
-    # Determine the class with the highest probability
     input_label = np.argmax(prediction)
 
     if input_label == 1:
         return "This person has a mask on their face."
     else:
         return "This person does not have a mask on their face."
+    
+    
 
 # Custom CSS to style the BMI result box
 st.markdown("""
@@ -438,4 +432,6 @@ elif selections == "Classify Image":
 
             except Exception as e:
                 st.error(f"An error occurred while fetching the image from URL: {e}")
+
+
 
