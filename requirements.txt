@@ -4,5 +4,4 @@ streamlit
 matplotlib
 Pillow
 streamlit-option-menu
-opencv-python-headless
 tensorflow
